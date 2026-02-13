@@ -71,3 +71,41 @@ function animer() {
 steveSkin.onload = () => {
     animer();
 };
+<div style="margin: 10px; font-family: sans-serif;">
+    <label>Vitesse : </label>
+    <input type="range" id="vitesseRange" min="0" max="10" value="2">
+    <button id="boutonStop">Pause / Lecture</button>
+</div>
+const canvas = document.getElementById('tonCanvas');
+const ctx = canvas.getContext('2d');
+const vitesseInput = document.getElementById('vitesseRange');
+const boutonStop = document.getElementById('boutonStop');
+
+const steveSkin = new Image();
+steveSkin.src = 'https://minecraft.net';
+
+let positionX = 0;
+let enMouvement = true;
+
+// Fonction de dessin
+function animer() {
+    if (enMouvement) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Dessiner la tête
+        ctx.drawImage(steveSkin, 8, 8, 8, 8, positionX, 50, 50, 50);
+
+        // Récupérer la vitesse du curseur et l'appliquer
+        positionX += parseFloat(vitesseInput.value);
+
+        if (positionX > canvas.width) positionX = -50;
+    }
+    requestAnimationFrame(animer);
+}
+
+// Gérer le bouton Pause
+boutonStop.addEventListener('click', () => {
+    enMouvement = !enMouvement;
+});
+
+steveSkin.onload = animer;
