@@ -38,3 +38,36 @@
     </script>
 </body>
 </html>
+const canvas = document.getElementById('tonCanvas'); // Vérifie bien l'ID de ton canvas
+const ctx = canvas.getContext('2d');
+
+// 1. On charge l'image du skin de Steve (ou un lien vers ton skin)
+const steveSkin = new Image();
+steveSkin.src = 'https://minecraft.net'; // Image de test
+
+let positionX = 0;
+
+function animer() {
+    // Nettoyer le canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Dessiner la tête de Steve (la zone de la tête sur un skin est à 8,8 et fait 8x8 pixels)
+    // On l'agrandit pour qu'elle fasse 50x50 sur l'écran
+    ctx.drawImage(
+        steveSkin, 
+        8, 8, 8, 8,    // Coordonnées de la tête dans l'image source
+        positionX, 50, // Position sur ton écran (X et Y)
+        50, 50         // Taille de l'affichage (Largeur et Hauteur)
+    );
+
+    // Faire bouger la tête
+    positionX += 2;
+    if (positionX > canvas.width) positionX = -50;
+
+    requestAnimationFrame(animer);
+}
+
+// Lancer l'animation quand l'image est chargée
+steveSkin.onload = () => {
+    animer();
+};
