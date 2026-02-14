@@ -2,72 +2,131 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Mon Animation Minecraft 3D</title>
+    <title>Minecraft Animator Pro 3D</title>
     <style>
-        body { margin: 0; background-color: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; text-align: center; }
+        body { margin: 0; overflow: hidden; background-color: #1a1a1a; font-family: 'Segoe UI', sans-serif; }
+        #ui-container { position: absolute; top: 10px; left: 10px; color: white; background: rgba(0,0,0,0.8); padding: 15px; border-radius: 8px; border: 1px solid #555; pointer-events: auto; }
+        h1 { margin: 0 0 10px 0; font-size: 18px; color: #55a82f; }
+        .hint { font-size: 12px; color: #aaa; margin-top: 10px; }
         canvas { display: block; }
-        .interface { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 15px; border-radius: 10px; border: 1px solid #555; }
-        h1 { position: absolute; top: 10px; width: 100%; color: #55a82f; pointer-events: none; }
-        button { padding: 10px; cursor: pointer; background: #55a82f; color: white; border: none; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>Animateur Minecraft 3D</h1>
-
-    <div class="interface">
-        <label>Rotation : </label>
-        <input type="range" id="vitesseRot" min="0" max="10" value="2">
-        <button id="boutonStop">PAUSE / LECTURE</button>
+    <div id="ui-container">
+        <h1>MC Animator Studio</h1>
+        <div id="gui-target"></div>
+        <div class="hint">Utilise la souris pour tourner la caméra<br>Molette pour zoomer</div>
     </div>
 
-    <!-- On charge la bibliothèque 3D Three.js -->
+    <!-- Bibliothèques : 3D (Three.js), Contrôles (Orbit), Interface (lil-gui) -->
     <script src="https://cdnjs.cloudflare.com"></script>
+    <script src="https://cdn.jsdelivr.net"></script>
+    <script src="https://cdn.jsdelivr.net"></script>
 
     <script>
-        // 1. INITIALISATION DE LA SCÈNE 3D
+        // --- 1. SETUP DE LA SCENE ---
         const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x222222);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // 2. CRÉATION DU CUBE (La tête de Steve)
-        const textureLoader = new THREE.TextureLoader();
-        // On charge la texture de Steve (Face avant)
-        const textureSteve = textureLoader.load('https://mc-heads.net');
-        
-        const geometry = new THREE.BoxGeometry(2, 2, 2);
-        const material = new THREE.MeshBasicMaterial({ map: textureSteve });
-        const steveCube = new THREE.Mesh(geometry, material);
-        scene.add(steveCube);
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        camera.position.set(5, 5, 10);
+        controls.update();
 
-        camera.position.z = 5;
+        // Lumières
+        const light = new THREE.DirectionalLight(0ffffff, 1);
+        light.position.set(5, 10, 7.5);
+        scene.add(light);
+        scene.add(new THREE.AmbientLight(0x404040));
 
-        // 3. LOGIQUE D'ANIMATION
-        let enMouvement = true;
-        const vitesseInput = document.getElementById('vitesseRot');
-        const boutonStop = document.getElementById('boutonStop');
+        // Sol (Grid)
+        const grid = new THREE.GridHelper(20, 20, 0x55a82f, 0x444444);
+        scene.add(grid);
 
+        // --- 2. CRÉATION DU PERSONNAGE (HIÉRARCHIE) ---
+        const steveGroup = new THREE.Group();
+        scene.add(steveGroup);
+
+        const material = new THREE.MeshLambertMaterial({ color: 0x00aaff });
+        const skinTex = new THREE.TextureLoader().load('https://mc-heads.net');
+        const headMat = new THREE.MeshLambertMaterial({ map: skinTex });
+
+        // Tête
+        const head = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 2), headMat);
+        head.position.y = 5;
+        steveGroup.add(head);
+
+        // Corps
+        const body = new THREE.Mesh(new THREE.BoxGeometry(2, 3, 1), material);
+        body.position.y = 2.5;
+        steveGroup.add(body);
+
+        // Bras Droit
+        const armR = new THREE.Group();
+        const armRMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 3, 1), material);
+        armRMesh.position.y = -1.5;
+        armR.add(armRMesh);
+        armR.position.set(-1.5, 4, 0);
+        steveGroup.add(armR);
+
+        // Jambe Droite
+        const legR = new THREE.Group();
+        const legRMesh = new THREE.Mesh(new THREE.BoxGeometry(1, 3, 1), material);
+        legRMesh.position.y = -1.5;
+        legR.add(legRMesh);
+        legR.position.set(-0.5, 1, 0);
+        steveGroup.add(legR);
+
+        // --- 3. INTERFACE DE CONTRÔLE (LIL-GUI) ---
+        const settings = {
+            rotationTete: 0,
+            brasDroit: 0,
+            jambeDroite: 0,
+            vitesseDanse: 0,
+            couleurCorps: "#00aaff",
+            reset: () => {
+                settings.rotationTete = 0;
+                settings.brasDroit = 0;
+                settings.jambeDroite = 0;
+                settings.vitesseDanse = 0;
+                armR.rotation.x = 0;
+                legR.rotation.x = 0;
+                head.rotation.y = 0;
+            }
+        };
+
+        const gui = new lil.GUI({ container: document.getElementById('gui-target') });
+        gui.add(settings, 'rotationTete', -1.5, 1.5).name('Tourner Tête').listen();
+        gui.add(settings, 'brasDroit', -3, 3).name('Bouger Bras').listen();
+        gui.add(settings, 'jambeDroite', -1, 1).name('Bouger Jambe').listen();
+        gui.add(settings, 'vitesseDanse', 0, 0.2).name('Mode Danse 💃');
+        gui.addColor(settings, 'couleurCorps').name('Couleur').onChange(v => material.color.set(v));
+        gui.add(settings, 'reset').name('Réinitialiser');
+
+        // --- 4. BOUCLE D'ANIMATION ---
         function animate() {
             requestAnimationFrame(animate);
 
-            if (enMouvement) {
-                const vitesse = parseFloat(vitesseInput.value) / 100;
-                steveCube.rotation.y += vitesse;
-                steveCube.rotation.x += vitesse * 0.5;
+            // Appliquer les contrôles manuels
+            head.rotation.y = settings.rotationTete;
+            armR.rotation.x = settings.brasDroit;
+            legR.rotation.x = settings.jambeDroite;
+
+            // Mode Danse Automatique
+            if (settings.vitesseDanse > 0) {
+                const t = Date.now() * settings.vitesseDanse * 0.1;
+                armR.rotation.x = Math.sin(t) * 2;
+                legR.rotation.x = Math.cos(t) * 1;
+                steveGroup.position.y = Math.abs(Math.sin(t)) * 0.5;
             }
 
             renderer.render(scene, camera);
         }
 
-        // Contrôles
-        boutonStop.addEventListener('click', () => {
-            enMouvement = !enMouvement;
-            boutonStop.style.background = enMouvement ? "#55a82f" : "#a82f2f";
-        });
-
-        // Ajuster la taille si on redimensionne la fenêtre
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
@@ -78,6 +137,3 @@
     </script>
 </body>
 </html>
-steveCube.rotation.y += 0.02; // Rotation horizontale
-steveCube.rotation.x += 0.01; // Rotation verticale
-steveCube.rotation.z += 0.01; // Rotation de côté
