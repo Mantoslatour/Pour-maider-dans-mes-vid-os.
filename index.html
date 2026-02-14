@@ -2,96 +2,79 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mon Animation Minecraft</title>
+    <title>Mon Animation Minecraft 3D</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #1a1a1a; color: #ffffff; margin: 0; padding: 20px; }
-        h1 { color: #55a82f; text-shadow: 2px 2px #000; }
-        canvas { border: 5px solid #333; background-color: #f0f0f0; box-shadow: 0px 0px 20px rgba(0,0,0,0.5); image-rendering: pixelated; margin-top: 10px; }
-        .interface { margin: 20px; padding: 20px; background: #2c2c2c; border-radius: 15px; display: inline-block; border: 1px solid #444; }
-        label { font-weight: bold; margin-right: 10px; }
-        button { padding: 12px 25px; cursor: pointer; background: #55a82f; color: white; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
-        button:hover { background: #6bc23d; transform: scale(1.05); }
-        input[type=range] { vertical-align: middle; cursor: pointer; }
+        body { margin: 0; background-color: #1a1a1a; color: white; font-family: sans-serif; overflow: hidden; text-align: center; }
+        canvas { display: block; }
+        .interface { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.7); padding: 15px; border-radius: 10px; border: 1px solid #555; }
+        h1 { position: absolute; top: 10px; width: 100%; color: #55a82f; pointer-events: none; }
+        button { padding: 10px; cursor: pointer; background: #55a82f; color: white; border: none; border-radius: 5px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h1>Animateur Minecraft v1.0</h1>
+    <h1>Animateur Minecraft 3D</h1>
 
-    <!-- ZONE DE DESSIN -->
-    <canvas id="tonCanvas" width="800" height="400"></canvas>
-
-    <br>
-
-    <!-- PANNEAU DE CONTROLE -->
     <div class="interface">
-        <label>VITESSE :</label>
-        <input type="range" id="vitesseRange" min="0" max="15" value="4">
-        <span id="valeurVitesse" style="display:inline-block; width:30px;">4</span>
-        
-        <button id="boutonStop" style="margin-left: 20px;">PAUSE / LECTURE</button>
+        <label>Rotation : </label>
+        <input type="range" id="vitesseRot" min="0" max="10" value="2">
+        <button id="boutonStop">PAUSE / LECTURE</button>
     </div>
 
+    <!-- On charge la bibliothèque 3D Three.js -->
+    <script src="https://cdnjs.cloudflare.com"></script>
+
     <script>
-        const canvas = document.getElementById('tonCanvas');
-        const ctx = canvas.getContext('2d');
-        const vitesseInput = document.getElementById('vitesseRange');
-        const vitesseAffichage = document.getElementById('valeurVitesse');
+        // 1. INITIALISATION DE LA SCÈNE 3D
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. CRÉATION DU CUBE (La tête de Steve)
+        const textureLoader = new THREE.TextureLoader();
+        // On charge la texture de Steve (Face avant)
+        const textureSteve = textureLoader.load('https://mc-heads.net');
+        
+        const geometry = new THREE.BoxGeometry(2, 2, 2);
+        const material = new THREE.MeshBasicMaterial({ map: textureSteve });
+        const steveCube = new THREE.Mesh(geometry, material);
+        scene.add(steveCube);
+
+        camera.position.z = 5;
+
+        // 3. LOGIQUE D'ANIMATION
+        let enMouvement = true;
+        const vitesseInput = document.getElementById('vitesseRot');
         const boutonStop = document.getElementById('boutonStop');
 
-        // Préparation de l'image de Steve
-        const steveImg = new Image();
-        steveImg.crossOrigin = "anonymous";
-        steveImg.src = 'https://mc-heads.net'; 
+        function animate() {
+            requestAnimationFrame(animate);
 
-        let posX = 0;
-        let mouvement = true;
-        let imagePrete = false;
-
-        // Quand l'image a fini de charger
-        steveImg.onload = () => { 
-            imagePrete = true; 
-            console.log("Image de Steve chargée !");
-        };
-
-        function boucleAnimation() {
-            if (mouvement) {
-                // 1. Nettoyer le fond
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // 2. Dessiner le personnage (Steve ou Carré de secours)
-                if (imagePrete) {
-                    ctx.drawImage(steveImg, posX, 150, 100, 100);
-                } else {
-                    ctx.fillStyle = "#55a82f"; // Vert Minecraft
-                    ctx.fillRect(posX, 150, 100, 100);
-                    ctx.strokeStyle = "#000";
-                    ctx.strokeRect(posX, 150, 100, 100);
-                }
-
-                // 3. Calculer la prochaine position
-                let vitesse = parseFloat(vitesseInput.value);
-                vitesseAffichage.innerText = vitesse;
-                posX += vitesse;
-
-                // 4. Revenir au début si on sort
-                if (posX > canvas.width) {
-                    posX = -100;
-                }
+            if (enMouvement) {
+                const vitesse = parseFloat(vitesseInput.value) / 100;
+                steveCube.rotation.y += vitesse;
+                steveCube.rotation.x += vitesse * 0.5;
             }
-            requestAnimationFrame(boucleAnimation);
+
+            renderer.render(scene, camera);
         }
 
-        // Contrôle du bouton
+        // Contrôles
         boutonStop.addEventListener('click', () => {
-            mouvement = !mouvement;
-            boutonStop.style.background = mouvement ? "#55a82f" : "#a82f2f";
+            enMouvement = !enMouvement;
+            boutonStop.style.background = enMouvement ? "#55a82f" : "#a82f2f";
         });
 
-        // Lancement direct
-        boucleAnimation();
-    </script>
+        // Ajuster la taille si on redimensionne la fenêtre
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
 
+        animate();
+    </script>
 </body>
 </html>
