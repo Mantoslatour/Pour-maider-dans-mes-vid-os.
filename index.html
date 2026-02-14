@@ -76,36 +76,18 @@ steveSkin.onload = () => {
     <input type="range" id="vitesseRange" min="0" max="10" value="2">
     <button id="boutonStop">Pause / Lecture</button>
 </div>
-const canvas = document.getElementById('tonCanvas');
-const ctx = canvas.getContext('2d');
-const vitesseInput = document.getElementById('vitesseRange');
-const boutonStop = document.getElementById('boutonStop');
+<!-- La partie visuelle (Boutons, Canvas) -->
+<canvas id="tonCanvas" width="400" height="200" style="border:1px solid black;"></canvas>
 
-const steveSkin = new Image();
-steveSkin.src = 'https://minecraft.net';
+<div style="margin: 10px;">
+    <label>Vitesse : </label>
+    <input type="range" id="vitesseRange" min="0" max="10" value="2">
+    <button id="boutonStop">Pause / Lecture</button>
+</div>
 
-let positionX = 0;
-let enMouvement = true;
-
-// Fonction de dessin
-function animer() {
-    if (enMouvement) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Dessiner la tête
-        ctx.drawImage(steveSkin, 8, 8, 8, 8, positionX, 50, 50, 50);
-
-        // Récupérer la vitesse du curseur et l'appliquer
-        positionX += parseFloat(vitesseInput.value);
-
-        if (positionX > canvas.width) positionX = -50;
-    }
-    requestAnimationFrame(animer);
-}
-
-// Gérer le bouton Pause
-boutonStop.addEventListener('click', () => {
-    enMouvement = !enMouvement;
-});
-
-steveSkin.onload = animer;
+<!-- On dit au navigateur : "Attention, voici du code !" -->
+<script>
+    // COLLE TOUT LE CODE JAVASCRIPT ICI
+    const canvas = document.getElementById('tonCanvas');
+    // ... le reste du code que je t'ai donné ...
+</script>
