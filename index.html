@@ -2,110 +2,95 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Animation Minecraft</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background-color: #222; color: white; }
-        canvas { border: 4px solid #555; background-color: #eee; margin-top: 20px; image-rendering: pixelated; }
-        .controles { margin: 20px; padding: 15px; background: #333; border-radius: 10px; display: inline-block; }
-        button { padding: 10px 20px; cursor: pointer; background: #55a82f; color: white; border: none; border-radius: 5px; font-weight: bold; }
-        button:hover { background: #3e7b21; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background-color: #1a1a1a; color: #ffffff; margin: 0; padding: 20px; }
+        h1 { color: #55a82f; text-shadow: 2px 2px #000; }
+        canvas { border: 5px solid #333; background-color: #f0f0f0; box-shadow: 0px 0px 20px rgba(0,0,0,0.5); image-rendering: pixelated; margin-top: 10px; }
+        .interface { margin: 20px; padding: 20px; background: #2c2c2c; border-radius: 15px; display: inline-block; border: 1px solid #444; }
+        label { font-weight: bold; margin-right: 10px; }
+        button { padding: 12px 25px; cursor: pointer; background: #55a82f; color: white; border: none; border-radius: 8px; font-weight: bold; transition: 0.2s; }
+        button:hover { background: #6bc23d; transform: scale(1.05); }
+        input[type=range] { vertical-align: middle; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <h1>Animateur de Tête Minecraft</h1>
+    <h1>Animateur Minecraft v1.0</h1>
 
-    <!-- LE VISUEL -->
-    <canvas id="tonCanvas" width="600" height="300"></canvas>
+    <!-- ZONE DE DESSIN -->
+    <canvas id="tonCanvas" width="800" height="400"></canvas>
 
     <br>
 
-    <!-- LES CONTRÔLES -->
-    <div class="controles">
-        <label>Vitesse : </label>
-        <input type="range" id="vitesseRange" min="0" max="20" value="5">
-        <button id="boutonStop">PAUSE / LECTURE</button>
+    <!-- PANNEAU DE CONTROLE -->
+    <div class="interface">
+        <label>VITESSE :</label>
+        <input type="range" id="vitesseRange" min="0" max="15" value="4">
+        <span id="valeurVitesse" style="display:inline-block; width:30px;">4</span>
+        
+        <button id="boutonStop" style="margin-left: 20px;">PAUSE / LECTURE</button>
     </div>
 
-    <!-- LA LOGIQUE -->
     <script>
         const canvas = document.getElementById('tonCanvas');
         const ctx = canvas.getContext('2d');
         const vitesseInput = document.getElementById('vitesseRange');
+        const vitesseAffichage = document.getElementById('valeurVitesse');
         const boutonStop = document.getElementById('boutonStop');
 
-        // On utilise l'image de Steve
-        const steveSkin = new Image();
-        steveSkin.crossOrigin = "anonymous"; // Pour éviter les erreurs de sécurité
-        steveSkin.src = 'https://minotar.net'; // Image de tête directe
+        // Préparation de l'image de Steve
+        const steveImg = new Image();
+        steveImg.crossOrigin = "anonymous";
+        steveImg.src = 'https://mc-heads.net'; 
 
-        let positionX = 0;
-        let enMouvement = true;
+        let posX = 0;
+        let mouvement = true;
+        let imagePrete = false;
 
-        function animer() {
-            if (enMouvement) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Dessiner la tête (ajusté pour l'image Minotar qui est déjà une tête)
-                ctx.drawImage(steveSkin, positionX, 100, 80, 80);
-
-                // Avancer
-                positionX += parseFloat(vitesseInput.value);
-
-                // Boucle
-                if (positionX > canvas.width) positionX = -80;
-            }
-            requestAnimationFrame(animer);
-        }
-
-        boutonStop.addEventListener('click', () => {
-            enMouvement = !enMouvement;
-        });
-
-        steveSkin.onload = () => {
-            animer();
+        // Quand l'image a fini de charger
+        steveImg.onload = () => { 
+            imagePrete = true; 
+            console.log("Image de Steve chargée !");
         };
-    </script>
-    <script>
-        const canvas = document.getElementById('tonCanvas');
-        const ctx = canvas.getContext('2d');
-        const vitesseInput = document.getElementById('vitesseRange');
-        const boutonStop = document.getElementById('boutonStop');
 
-        const steveSkin = new Image();
-        steveSkin.crossOrigin = "anonymous";
-        // On change de lien pour un plus fiable
-        steveSkin.src = 'https://mc-heads.net'; 
-
-        let positionX = 0;
-        let enMouvement = true;
-        let imageChargee = false;
-
-        steveSkin.onload = () => { imageChargee = true; };
-
-        function animer() {
-            if (enMouvement) {
+        function boucleAnimation() {
+            if (mouvement) {
+                // 1. Nettoyer le fond
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-                if (imageChargee) {
-                    // Si l'image est prête, on dessine Steve
-                    ctx.drawImage(steveSkin, positionX, 100, 80, 80);
+                // 2. Dessiner le personnage (Steve ou Carré de secours)
+                if (imagePrete) {
+                    ctx.drawImage(steveImg, posX, 150, 100, 100);
                 } else {
-                    // SINON, on dessine un carré vert (secours) pour voir si ça bouge !
-                    ctx.fillStyle = "#55a82f";
-                    ctx.fillRect(positionX, 100, 80, 80);
+                    ctx.fillStyle = "#55a82f"; // Vert Minecraft
+                    ctx.fillRect(posX, 150, 100, 100);
+                    ctx.strokeStyle = "#000";
+                    ctx.strokeRect(posX, 150, 100, 100);
                 }
 
-                positionX += parseFloat(vitesseInput.value);
-                if (positionX > canvas.width) positionX = -80;
+                // 3. Calculer la prochaine position
+                let vitesse = parseFloat(vitesseInput.value);
+                vitesseAffichage.innerText = vitesse;
+                posX += vitesse;
+
+                // 4. Revenir au début si on sort
+                if (posX > canvas.width) {
+                    posX = -100;
+                }
             }
-            requestAnimationFrame(animer);
+            requestAnimationFrame(boucleAnimation);
         }
 
-        boutonStop.addEventListener('click', () => { enMouvement = !enMouvement; });
-        
-        // On lance l'animation immédiatement
-        animer();
+        // Contrôle du bouton
+        boutonStop.addEventListener('click', () => {
+            mouvement = !mouvement;
+            boutonStop.style.background = mouvement ? "#55a82f" : "#a82f2f";
+        });
+
+        // Lancement direct
+        boucleAnimation();
     </script>
 
 </body>
