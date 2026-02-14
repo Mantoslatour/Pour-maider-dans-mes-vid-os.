@@ -1,93 +1,62 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Studio Mantoslatour</title>
-    <style>
-        body { margin: 0; background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; }
-        canvas { display: block; margin: 20px auto; border: 5px solid #55aa55; width: 80%; height: 400px; }
-    </style>
+    <title>Mon Animation Minecraft</title>
 </head>
 <body>
-    <h1>MON ANIMATION MINECRAFT</h1>
-    <!-- La zone 3D -->
-    <div id="container"></div>
 
-    <!-- On charge le moteur de jeu de Microsoft/Web (Three.js) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <h1>Mon Animateur Minecraft</h1>
+
+    <!-- 1. LE VISUEL (Le Canvas et les contrôles) -->
+    <canvas id="tonCanvas" width="600" height="300" style="border:2px solid #555; background: #eee;"></canvas>
+
+    <div style="margin: 20px;">
+        <label>Vitesse : </label>
+        <input type="range" id="vitesseRange" min="0" max="20" value="5">
+        <button id="boutonStop" style="padding: 10px; cursor: pointer;">Pause / Lecture</button>
+    </div>
+
+    <!-- 2. LA LOGIQUE (Le JavaScript entre ses balises) -->
     <script>
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / 400, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer();
-        renderer.setSize(window.innerWidth * 0.8, 400);
-        document.getElementById('container').appendChild(renderer.domElement);
+        const canvas = document.getElementById('tonCanvas');
+        const ctx = canvas.getContext('2d');
+        const vitesseInput = document.getElementById('vitesseRange');
+        const boutonStop = document.getElementById('boutonStop');
 
-        // Création du bloc
-        const geometry = new THREE.BoxGeometry(1, 1, 1);
-        const material = new THREE.MeshBasicMaterial({ color: 0x55aa55 });
-        const cube = new THREE.Mesh(geometry, material);
-        scene.add(cube);
-        camera.position.z = 3;
+        // Image de la tête de Steve
+        const steveSkin = new Image();
+        steveSkin.src = 'https://minecraft.net';
 
-        function animate() {
-            requestAnimationFrame(animate);
-            cube.rotation.x += 0.02;
-            cube.rotation.y += 0.02;
-            renderer.render(scene, camera);
+        let positionX = 0;
+        let enMouvement = true;
+
+        function animer() {
+            if (enMouvement) {
+                // Effacer le dessin précédent
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Dessiner la tête (on prend la zone 8,8 du skin)
+                ctx.drawImage(steveSkin, 8, 8, 8, 8, positionX, 100, 80, 80);
+
+                // Avancer selon le curseur de vitesse
+                positionX += parseFloat(vitesseInput.value);
+
+                // Revenir au début si on sort de l'écran
+                if (positionX > canvas.width) positionX = -80;
+            }
+            requestAnimationFrame(animer);
         }
-        animate();
+
+        // Action du bouton Pause
+        boutonStop.addEventListener('click', () => {
+            enMouvement = !enMouvement;
+        });
+
+        // Lancer quand l'image est prête
+        steveSkin.onload = () => {
+            animer();
+        };
     </script>
+
 </body>
 </html>
-const canvas = document.getElementById('tonCanvas'); // Vérifie bien l'ID de ton canvas
-const ctx = canvas.getContext('2d');
-
-// 1. On charge l'image du skin de Steve (ou un lien vers ton skin)
-const steveSkin = new Image();
-steveSkin.src = 'https://minecraft.net'; // Image de test
-
-let positionX = 0;
-
-function animer() {
-    // Nettoyer le canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // 2. Dessiner la tête de Steve (la zone de la tête sur un skin est à 8,8 et fait 8x8 pixels)
-    // On l'agrandit pour qu'elle fasse 50x50 sur l'écran
-    ctx.drawImage(
-        steveSkin, 
-        8, 8, 8, 8,    // Coordonnées de la tête dans l'image source
-        positionX, 50, // Position sur ton écran (X et Y)
-        50, 50         // Taille de l'affichage (Largeur et Hauteur)
-    );
-
-    // Faire bouger la tête
-    positionX += 2;
-    if (positionX > canvas.width) positionX = -50;
-
-    requestAnimationFrame(animer);
-}
-
-// Lancer l'animation quand l'image est chargée
-steveSkin.onload = () => {
-    animer();
-};
-<div style="margin: 10px; font-family: sans-serif;">
-    <label>Vitesse : </label>
-    <input type="range" id="vitesseRange" min="0" max="10" value="2">
-    <button id="boutonStop">Pause / Lecture</button>
-</div>
-<!-- La partie visuelle (Boutons, Canvas) -->
-<canvas id="tonCanvas" width="400" height="200" style="border:1px solid black;"></canvas>
-
-<div style="margin: 10px;">
-    <label>Vitesse : </label>
-    <input type="range" id="vitesseRange" min="0" max="10" value="2">
-    <button id="boutonStop">Pause / Lecture</button>
-</div>
-
-<!-- On dit au navigateur : "Attention, voici du code !" -->
-<script>
-    // COLLE TOUT LE CODE JAVASCRIPT ICI
-    const canvas = document.getElementById('tonCanvas');
-    // ... le reste du code que je t'ai donné ...
-</script>
