@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Animation Minecraft</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background-color: #222; color: white; }
+        canvas { border: 4px solid #555; background-color: #eee; margin-top: 20px; image-rendering: pixelated; }
+        .controles { margin: 20px; padding: 15px; background: #333; border-radius: 10px; display: inline-block; }
+        button { padding: 10px 20px; cursor: pointer; background: #55a82f; color: white; border: none; border-radius: 5px; font-weight: bold; }
+        button:hover { background: #3e7b21; }
+    </style>
+</head>
+<body>
+
+    <h1>Animateur de Tête Minecraft</h1>
+
+    <!-- LE VISUEL -->
+    <canvas id="tonCanvas" width="600" height="300"></canvas>
+
+    <br>
+
+    <!-- LES CONTRÔLES -->
+    <div class="controles">
+        <label>Vitesse : </label>
+        <input type="range" id="vitesseRange" min="0" max="20" value="5">
+        <button id="boutonStop">PAUSE / LECTURE</button>
+    </div>
+
+    <!-- LA LOGIQUE -->
+    <script>
+        const canvas = document.getElementById('tonCanvas');
+        const ctx = canvas.getContext('2d');
+        const vitesseInput = document.getElementById('vitesseRange');
+        const boutonStop = document.getElementById('boutonStop');
+
+        // On utilise l'image de Steve
+        const steveSkin = new Image();
+        steveSkin.crossOrigin = "anonymous"; // Pour éviter les erreurs de sécurité
+        steveSkin.src = 'https://minotar.net'; // Image de tête directe
+
+        let positionX = 0;
+        let enMouvement = true;
+
+        function animer() {
+            if (enMouvement) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // Dessiner la tête (ajusté pour l'image Minotar qui est déjà une tête)
+                ctx.drawImage(steveSkin, positionX, 100, 80, 80);
+
+                // Avancer
+                positionX += parseFloat(vitesseInput.value);
+
+                // Boucle
+                if (positionX > canvas.width) positionX = -80;
+            }
+            requestAnimationFrame(animer);
+        }
+
+        boutonStop.addEventListener('click', () => {
+            enMouvement = !enMouvement;
+        });
+
+        steveSkin.onload = () => {
+            animer();
+        };
+    </script>
+
+</body>
+</html>
