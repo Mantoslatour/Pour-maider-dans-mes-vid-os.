@@ -66,6 +66,47 @@
             animer();
         };
     </script>
+    <script>
+        const canvas = document.getElementById('tonCanvas');
+        const ctx = canvas.getContext('2d');
+        const vitesseInput = document.getElementById('vitesseRange');
+        const boutonStop = document.getElementById('boutonStop');
+
+        const steveSkin = new Image();
+        steveSkin.crossOrigin = "anonymous";
+        // On change de lien pour un plus fiable
+        steveSkin.src = 'https://mc-heads.net'; 
+
+        let positionX = 0;
+        let enMouvement = true;
+        let imageChargee = false;
+
+        steveSkin.onload = () => { imageChargee = true; };
+
+        function animer() {
+            if (enMouvement) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                if (imageChargee) {
+                    // Si l'image est prête, on dessine Steve
+                    ctx.drawImage(steveSkin, positionX, 100, 80, 80);
+                } else {
+                    // SINON, on dessine un carré vert (secours) pour voir si ça bouge !
+                    ctx.fillStyle = "#55a82f";
+                    ctx.fillRect(positionX, 100, 80, 80);
+                }
+
+                positionX += parseFloat(vitesseInput.value);
+                if (positionX > canvas.width) positionX = -80;
+            }
+            requestAnimationFrame(animer);
+        }
+
+        boutonStop.addEventListener('click', () => { enMouvement = !enMouvement; });
+        
+        // On lance l'animation immédiatement
+        animer();
+    </script>
 
 </body>
 </html>
